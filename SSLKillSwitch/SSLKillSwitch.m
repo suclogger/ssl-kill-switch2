@@ -35,42 +35,6 @@ static void SSKLog(NSString *format, ...)
 }
 
 
-#if SUBSTRATE_BUILD
-// Utility function to read the Tweak's preferences
-static BOOL shouldHookFromPreference(NSString *preferenceSetting)
-{
-    BOOL shouldHook = NO;
-    NSMutableDictionary* plist = [[NSMutableDictionary alloc] initWithContentsOfFile:PREFERENCE_FILE];
-
-    if (!plist)
-    {
-        SSKLog(@"Preference file not found.");
-    }
-    else
-    {
-        shouldHook = [[plist objectForKey:preferenceSetting] boolValue];
-        SSKLog(@"Preference set to %d.", shouldHook);
-
-        // Checking if BundleId has been excluded by user
-        NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
-        bundleId = [bundleId stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-
-        NSString *excludedBundleIdsString = [plist objectForKey:@"excludedBundleIds"];
-        excludedBundleIdsString = [excludedBundleIdsString stringByReplacingOccurrencesOfString:@" " withString:@""];
-
-        NSArray *excludedBundleIds = [excludedBundleIdsString componentsSeparatedByString:@","];
-
-        if ([excludedBundleIds containsObject:bundleId])
-        {
-            SSKLog(@"Not hooking excluded bundle: %@", bundleId);
-            shouldHook = NO;
-        }
-    }
-    return shouldHook;
-}
-#endif
-
-
 #pragma mark SecureTransport hooks - iOS 9 and below
 // Explanation here: https://nabla-c0d3.github.io/blog/2013/08/20/ios-ssl-kill-switch-v0-dot-5-released/
 
@@ -217,7 +181,7 @@ __attribute__((constructor)) static void init(int argc, const char **argv)
 {
 #if SUBSTRATE_BUILD
     // Substrate-based hooking; only hook if the preference file says so
-    if (shouldHookFromPreference(PREFERENCE_KEY))
+    if (YES)
     {
         SSKLog(@"Substrate hook enabled.");
 
